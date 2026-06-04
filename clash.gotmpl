@@ -202,6 +202,13 @@ proxies:
   {{- if ne (default "" $proxy.Fingerprint) "" }}
   client-fingerprint: {{ $proxy.Fingerprint }}
   {{- end }}
+  {{- if $proxy.EchEnable }}
+  ech-opts:
+    enable: true
+    {{- if ne (default "" $proxy.EchServerName) "" }}
+    query-server-name: {{ $proxy.EchServerName }}
+    {{- end }}
+  {{- end }}
 {{- else if eq $proxy.Type "vless" }}
   {{- $encryptionStr := "" -}}
   {{- $encryption := default "none" $proxy.Encryption -}}
@@ -265,8 +272,39 @@ proxies:
   xhttp-opts:
     path: {{ default "/" $proxy.Path }}
     {{- if ne (default "" $proxy.Host) "" }}
-    headers:
-      Host: {{ $proxy.Host }}
+    host: {{ $proxy.Host }}
+    {{- end }}
+    {{- if ne (default "" $proxy.XhttpMode) "" }}
+    mode: {{ $proxy.XhttpMode }}
+    {{- end }}
+    {{- if ne (default "" $proxy.XhttpExtra) "" }}
+    {{- $extra := fromJson $proxy.XhttpExtra }}
+    {{- if $extra.downloadSettings }}
+    {{- $ds := $extra.downloadSettings }}
+    download-settings:
+      server: {{ $ds.address | quote }}
+      port: {{ $ds.port }}
+      network: {{ default "xhttp" $ds.network }}
+      tls: true
+      {{- if $ds.tlsSettings }}
+      servername: {{ $ds.tlsSettings.serverName | quote }}
+      alpn: {{ $ds.tlsSettings.alpn | toJson }}
+      client-fingerprint: {{ default "chrome" $ds.tlsSettings.fingerprint }}
+      {{- end }}
+      {{- if $ds.realitySettings }}
+      servername: {{ default "" $ds.realitySettings.serverName | quote }}
+      client-fingerprint: {{ default "chrome" $ds.realitySettings.fingerprint }}
+      reality-opts:
+        public-key: {{ $ds.realitySettings.publicKey | quote }}
+        short-id: {{ default "" $ds.realitySettings.shortId | quote }}
+      {{- end }}
+      {{- if $ds.xhttpSettings }}
+      xhttp-opts:
+        host: {{ $ds.xhttpSettings.host | quote }}
+        path: {{ $ds.xhttpSettings.path | quote }}
+        mode: {{ default "auto" $ds.xhttpSettings.mode }}
+      {{- end }}
+    {{- end }}
     {{- end }}
   {{- else if eq $proxy.Transport "grpc" }}
   network: grpc
@@ -290,6 +328,13 @@ proxies:
     public-key: {{ $proxy.RealityPublicKey }}
     {{- if ne (default "" $proxy.RealityShortId) "" }}
     short-id: {{ $proxy.RealityShortId }}
+    {{- end }}
+  {{- end }}
+  {{- if $proxy.EchEnable }}
+  ech-opts:
+    enable: true
+    {{- if ne (default "" $proxy.EchServerName) "" }}
+    query-server-name: {{ $proxy.EchServerName }}
     {{- end }}
   {{- end }}
 {{- else if eq $proxy.Type "trojan" }}
@@ -341,6 +386,13 @@ proxies:
   grpc-opts:
     grpc-service-name: {{ default "grpc" $proxy.ServiceName }}
   {{- end }}
+  {{- if $proxy.EchEnable }}
+  ech-opts:
+    enable: true
+    {{- if ne (default "" $proxy.EchServerName) "" }}
+    query-server-name: {{ $proxy.EchServerName }}
+    {{- end }}
+  {{- end }}
 {{- else if or (eq $proxy.Type "hysteria2") (eq $proxy.Type "hysteria") }}
 - name: {{ $proxy.Name | quote }}
   type: hysteria2
@@ -371,6 +423,13 @@ proxies:
   {{- if ne (default "" (printf "%v" $proxy.DownMbps)) "" }}
   down: "{{ $proxy.DownMbps }} Mbps"
   {{- end }}
+  {{- if $proxy.EchEnable }}
+  ech-opts:
+    enable: true
+    {{- if ne (default "" $proxy.EchServerName) "" }}
+    query-server-name: {{ $proxy.EchServerName }}
+    {{- end }}
+  {{- end }}
 {{- else if eq $proxy.Type "tuic" }}
 - name: {{ $proxy.Name | quote }}
   type: tuic
@@ -397,6 +456,13 @@ proxies:
   {{- end }}
   {{- if ne (default "" $proxy.CongestionController) "" }}
   congestion-controller: {{ $proxy.CongestionController }}
+  {{- end }}
+  {{- if $proxy.EchEnable }}
+  ech-opts:
+    enable: true
+    {{- if ne (default "" $proxy.EchServerName) "" }}
+    query-server-name: {{ $proxy.EchServerName }}
+    {{- end }}
   {{- end }}
 {{- else if eq $proxy.Type "wireguard" }}
 - name: {{ $proxy.Name | quote }}
@@ -432,6 +498,13 @@ proxies:
   {{- end }}
   {{- if ne (default "" $proxy.Fingerprint) "" }}
   client-fingerprint: {{ $proxy.Fingerprint }}
+  {{- end }}
+  {{- if $proxy.EchEnable }}
+  ech-opts:
+    enable: true
+    {{- if ne (default "" $proxy.EchServerName) "" }}
+    query-server-name: {{ $proxy.EchServerName }}
+    {{- end }}
   {{- end }}
 {{- else }}
 - name: {{ $proxy.Name | quote }}
